@@ -7,6 +7,8 @@
 <title>Home Page</title>
 </head>
 <body>
-  Hello world
+ <script>
+  window.location.href = "/Servlet-blank/T001";
+</script>
 </body>
 </html>
