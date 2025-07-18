@@ -5,16 +5,16 @@
          xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee 
                              http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd">
 
-    <servlet>
-        <servlet-name>T001</servlet-name>
-        <servlet-class>training.servlet.T001</servlet-class>
+   <servlet>
+        <servlet-name>T001Action</servlet-name>
+        <servlet-class>action.T001Action</servlet-class>
     </servlet>
 
     <servlet-mapping>
-        <servlet-name>T001</servlet-name>
+        <servlet-name>T001Action</servlet-name>
         <url-pattern>/T001</url-pattern>
     </servlet-mapping>
-
+ 
     <welcome-file-list>
         <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>
