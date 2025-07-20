@@ -12,6 +12,7 @@
  <div class="header-content">
   <h1>Training</h1>
  </div>
+ 
  </header>
 </body>
 </html>
