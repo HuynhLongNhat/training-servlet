@@ -7,58 +7,72 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 
+/**
+ * Lớp tiện ích DBUtils quản lý kết nối cơ sở dữ liệu theo mẫu Singleton.
+ * 
+ * <p>
+ * Đọc thông tin cấu hình từ file {@code dbConfig.properties} trong classpath và tạo
+ * một kết nối duy nhất (Singleton) tới cơ sở dữ liệu. Kết nối này sẽ được tái sử dụng
+ * trong toàn bộ vòng đời của ứng dụng.
+ * </p>
+ *
+ */
 public class DBUtils {
-	private static String URL;
-	private static String USERNAME;
-	private static String PASSWORD;
+    /** URL kết nối JDBC */
+    private static String URL;
+    /** Tên người dùng DB */
+    private static String USERNAME;
+    /** Mật khẩu DB */
+    private static String PASSWORD;
+    /** Tên server DB */
+    private static String SERVERNAME;
+    /** Cổng DB */
+    private static String PORT;
+    /** Tên cơ sở dữ liệu */
+    private static String DATABASENAME;
 
-	static {
-		try (InputStream input = DBUtils.class.getClassLoader().getResourceAsStream("dbConfig.properties")) {
-			if (input == null) {
-				throw new RuntimeException("Không tìm thấy file cấu hình dbConfig.properties");
-			}
+    /** Singleton Connection duy nhất */
+    private static Connection connection;
 
-			Properties prop = new Properties();
-			prop.load(input);
+    // Khối static initializer: đọc file cấu hình và load driver JDBC
+    static {
+        try (InputStream input = DBUtils.class.getClassLoader().getResourceAsStream("dbConfig.properties")) {
+            if (input == null) {
+                throw new RuntimeException("Không tìm thấy file cấu hình dbConfig.properties");
+            }
 
-			String serverName = prop.getProperty("db.serverName");
-			String port = prop.getProperty("db.port", "1433");
-			String dbName = prop.getProperty("db.databaseName");
-			USERNAME = prop.getProperty("db.username");
-			PASSWORD = prop.getProperty("db.password");
+            Properties prop = new Properties();
+            prop.load(input);
 
-			URL = String.format("jdbc:sqlserver://%s:%s;databaseName=%s", serverName, port, dbName);
+            SERVERNAME = prop.getProperty("db.serverName");
+            PORT = prop.getProperty("db.port", "1433");
+            DATABASENAME = prop.getProperty("db.databaseName");
+            USERNAME = prop.getProperty("db.username");
+            PASSWORD = prop.getProperty("db.password");
 
-			// Load JDBC driver
-			Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+            // Tạo URL JDBC
+            URL = String.format("jdbc:sqlserver://%s:%s;databaseName=%s", SERVERNAME, PORT, DATABASENAME);
 
-		} catch (IOException | ClassNotFoundException e) {
-			throw new RuntimeException("Lỗi khi load cấu hình DB: " + e.getMessage(), e);
-		}
-	}
+            // Load driver JDBC
+            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException("Lỗi khi load cấu hình DB: " + e.getMessage(), e);
+        }
+    }
 
-	public static Connection getConnection() throws SQLException {
-		return DriverManager.getConnection(URL, USERNAME, PASSWORD);
-	}
-
-	public static void closeConnection(Connection conn) {
-		if (conn != null) {
-			try {
-				conn.close();
-				System.out.println("✅ Kết nối đã đóng.");
-			} catch (SQLException e) {
-				System.out.println("❌ Lỗi khi đóng kết nối: " + e.getMessage());
-			}
-		}
-	}
-
-	public static void main(String[] args) {
-		try (Connection conn = getConnection()) {
-			if (conn != null && !conn.isClosed()) {
-				System.out.println("✅ Kết nối thành công đến SQL Server!");
-			}
-		} catch (SQLException e) {
-			System.out.println("❌ Lỗi kết nối: " + e.getMessage());
-		}
-	}
+    /**
+     * Lấy kết nối tới cơ sở dữ liệu theo mẫu Singleton.
+     * <p>
+     * Nếu kết nối chưa tồn tại hoặc đã bị đóng, tạo một kết nối mới.
+     * </p>
+     *
+     * @return {@link Connection} đối tượng kết nối duy nhất
+     * @throws SQLException nếu có lỗi khi tạo kết nối
+     */
+    public static synchronized Connection getConnection() throws SQLException {
+        if (connection == null || connection.isClosed()) {
+            connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+        }
+        return connection;
+    }
 }

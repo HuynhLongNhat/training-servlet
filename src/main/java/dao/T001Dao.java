@@ -13,29 +13,29 @@ import utils.DBUtils;
  */
 public class T001Dao {
 
-    /**
-     * Kiểm tra thông tin đăng nhập trong bảng MSTUSER.
-     *
-     * @param t001Dto đối tượng chứa userId và password
-     * @return true nếu user tồn tại, false nếu không
-     * @throws SQLException nếu có lỗi khi truy vấn CSDL
-     */
-    public boolean login(T001Dto t001Dto) throws SQLException {
-        String sql = "SELECT COUNT(*) AS CNT FROM MSTUSER " +
-                     "WHERE DELETE_YMD IS NULL AND USERID = ? AND PASSWORD = ?";
+	/**
+	 * Kiểm tra thông tin đăng nhập trong bảng MSTUSER.
+	 *
+	 * @param t001Dto đối tượng chứa userId và password
+	 * @return true nếu user tồn tại, false nếu không
+	 * @throws SQLException nếu có lỗi khi truy vấn CSDL
+	 */
+	public boolean login(T001Dto t001Dto) throws SQLException {
+		String sql = "SELECT COUNT(*) AS CNT FROM MSTUSER "
+				+ "WHERE DELETE_YMD IS NULL AND USERID = ? AND PASSWORD = ?";
+		
+		Connection conn = DBUtils.getConnection();
+		try (PreparedStatement ps = conn.prepareStatement(sql)) {
 
-        try (Connection conn = DBUtils.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+			ps.setString(1, t001Dto.getUserId());
+			ps.setString(2, t001Dto.getPassword());
 
-            ps.setString(1, t001Dto.getUserId());
-            ps.setString(2, t001Dto.getPassword());
-
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt("CNT") == 1;
-                }
-            }
-        }
-        return false;
-    }
+			try (ResultSet rs = ps.executeQuery()) {
+				if (rs.next()) {
+					return rs.getInt("CNT") == 1;
+				}
+			}
+		}
+		return false;
+	}
 }
