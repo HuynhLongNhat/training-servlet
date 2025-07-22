@@ -45,8 +45,8 @@ public class T001Service {
      * @return the number of matching user records; {@code 0} if authentication fails
      * @throws SQLException if a database access error occurs
      */
-    public int login(T001Dto t001Dto) throws SQLException {
-        return t001Dao.login(t001Dto);
+    public T001Dto getUserLogin(T001Dto t001Dto) throws SQLException {
+        return t001Dao.getUserLogin(t001Dto);
     }
 
     /**
@@ -56,7 +56,5 @@ public class T001Service {
      * @return the user's name, or {@code null} if not found
      * @throws SQLException if a database access error occurs
      */
-    public String getUserName(String userId) throws SQLException {
-        return t001Dao.getUserName(userId);
-    }
+   
 }

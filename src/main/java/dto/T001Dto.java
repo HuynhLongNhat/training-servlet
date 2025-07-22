@@ -17,6 +17,9 @@ public class T001Dto {
 
     /** Password of the user */
     private String password;
+    
+    /** userName of the user */
+    private String userName;
 
     /**
      * Default constructor.
@@ -62,7 +65,7 @@ public class T001Dto {
     public String getPassword() {
         return password;
     }
-
+    
     /**
      * Sets the password.
      *
@@ -71,4 +74,14 @@ public class T001Dto {
     public void setPassword(String password) {
         this.password = password;
     }
+
+    public String getUserName() {
+		return userName;
+	}
+
+	public void setUserName(String userName) {
+		this.userName = userName;
+	}
+
+	
 }

@@ -38,46 +38,28 @@ public class T001Dao {
      * @return the number of matching records; returns {@code 0} if no match is found
      * @throws SQLException if a database access error occurs
      */
-    public int login(T001Dto t001Dto) throws SQLException {
-        String sql = "SELECT COUNT(*) AS CNT FROM MSTUSER "
+    public T001Dto getUserLogin(T001Dto inputDto) throws SQLException {
+        String sql = "SELECT USERID, USERNAME "
+                   + "FROM MSTUSER "
                    + "WHERE DELETE_YMD IS NULL AND USERID = ? AND PASSWORD = ?";
 
         try (Connection conn = DBUtils.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setString(1, t001Dto.getUserId());
-            ps.setString(2, t001Dto.getPassword());
+            ps.setString(1, inputDto.getUserId());
+            ps.setString(2, inputDto.getPassword());
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return rs.getInt("CNT");
+                    T001Dto userDto = new T001Dto();
+                    userDto.setUserId(rs.getString("USERID"));
+                    userDto.setUserName(rs.getString("USERNAME"));
+                    return userDto; // Trả về DTO nếu tìm thấy user
                 }
             }
         }
-        return 0;
+        return null; // Không tìm thấy user
     }
 
-    /**
-     * Retrieves the user's name from the {@code MSTUSER} table by user ID.
-     *
-     * @param userID the ID of the user
-     * @return the user's name, or {@code null} if not found
-     * @throws SQLException if a database access error occurs
-     */
-    public String getUserName(String userID) throws SQLException {
-        String sql = "SELECT USERNAME FROM MSTUSER WHERE USERID = ? AND DELETE_YMD IS NULL";
-
-        try (Connection conn = DBUtils.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setString(1, userID);
-
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getString("USERNAME");
-                }
-            }
-        }
-        return null;
-    }
+   
 }

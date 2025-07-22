@@ -30,8 +30,9 @@
             <span>Login</span> <span>&gt;</span> <span>Search Customer</span>
         </div>
         <div class="welcome">
-            <span>Welcome <label><%=session.getAttribute("userName")%></label></span>
-            <a href="#">Log Out</a>
+            <span>Welcome <label>${user.userName}</label></span>
+        <a href="${pageContext.request.contextPath}/logout">Logout</a>
+
         </div>
 
         <div class="blue-bar"></div>
