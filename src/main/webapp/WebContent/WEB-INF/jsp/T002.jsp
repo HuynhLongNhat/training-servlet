@@ -1,194 +1,129 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java"%>
+<%@ page import="java.util.List"%>
+<%@ page import="dto.T002Dto"%>
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Insert title here</title>
+<title>Search Customer</title>
 <link rel="stylesheet" type="text/css"
-	href="${pageContext.request.contextPath}/WebContent/css/T002.css">
+    href="${pageContext.request.contextPath}/WebContent/css/T002.css">
 </head>
-<style>
-</style>
 <body>
-<body>
-	<%@ include file="Header.jsp"%>
-	<div class="container">
+    <%@ include file="Header.jsp"%>
 
-		<div class="nav-group">
-			<span>Login</span> <span>></span> <span>Search Customer</span>
-		</div>
-		<div class="welcome">
-			<span>Welcome ABC</span> <a href="#">Log Out</a>
-		</div>
+    <%
+        List<T002Dto> customers = (List<T002Dto>) request.getAttribute("customers");
+        int currentPage = request.getAttribute("currentPage") != null ? (Integer) request.getAttribute("currentPage") : 1;
+        int totalPages = request.getAttribute("totalPages") != null ? (Integer) request.getAttribute("totalPages") : 1;
 
-		<div class="blue-bar"></div>
+        boolean disableFirst = request.getAttribute("disableFirst") != null ? (Boolean) request.getAttribute("disableFirst") : true;
+        boolean disablePrevious = request.getAttribute("disablePrevious") != null ? (Boolean) request.getAttribute("disablePrevious") : true;
+        boolean disableNext = request.getAttribute("disableNext") != null ? (Boolean) request.getAttribute("disableNext") : true;
+        boolean disableLast = request.getAttribute("disableLast") != null ? (Boolean) request.getAttribute("disableLast") : true;
 
-		<div class="search-form">
-			<label>Customer Name <input type="text" name="customerName"></label>
-			<label>Sex <select name="sex">
-					<option value="">All</option>
-					<option value="Male">Male</option>
-					<option value="Female">Female</option>
-			</select>
-			</label> <label>Birthday <input type="date" name="birthdayFrom">
-				- <input type="date" name="birthdayTo"></label>
-			<button type="submit">Search</button>
-		</div>
-		<div class="btn-pagination">
-			<div class="previous">
-				<button>&lt;&lt;</button>
-				<button>&lt;</button>
-				<span>Previous</span>
-			</div>
+        boolean disableDelete = (customers == null || customers.isEmpty());
+    %>
 
-			<div class="next">
-				<span>Next</span>
-				<button>&gt;&gt;</button>
-				<button>&gt;</button>
-			</div>
+    <div class="container">
+        <div class="nav-group">
+            <span>Login</span> <span>&gt;</span> <span>Search Customer</span>
+        </div>
+        <div class="welcome">
+            <span>Welcome <label><%=session.getAttribute("userName")%></label></span>
+            <a href="#">Log Out</a>
+        </div>
 
-		</div>
-		<table class="customer-table">
-			<thead>
-				<tr>
-					<th class="select">☐</th>
-					<th class="customer-id">Customer ID</th>
-					<th class="customer-name">Customer Name</th>
-					<th class="sex">Sex</th>
-					<th class="birthday">Birthday</th>
-					<th class="address">Address</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td><input type="checkbox"></td>
-					<td class="id-data">11010001</td>
-					<td>Nguyen Van A</td>
-					<td>Male</td>
-					<td>1982/01/01</td>
-					<td>123 No Trang Long</td>
-				</tr>
-				<tr>
-					<td><input type="checkbox"></td>
-					<td class="id-data">11010001</td>
-					<td>Nguyen Van A</td>
-					<td>Male</td>
-					<td>1982/01/01</td>
-					<td>123 No Trang Long</td>
-				</tr>
-				<tr>
-					<td><input type="checkbox"></td>
-					<td class="id-data">11010001</td>
-					<td>Nguyen Van A</td>
-					<td>Male</td>
-					<td>1982/01/01</td>
-					<td>123 No Trang Long</td>
-				</tr>
-				<tr>
-					<td><input type="checkbox"></td>
-					<td class="id-data">11010001</td>
-					<td>Nguyen Van A</td>
-					<td>Male</td>
-					<td>1982/01/01</td>
-					<td>123 No Trang Long</td>
-				</tr>
-				<tr>
-					<td><input type="checkbox"></td>
-					<td class="id-data">11010001</td>
-					<td>Nguyen Van A</td>
-					<td>Male</td>
-					<td>1982/01/01</td>
-					<td>123 No Trang Long</td>
-				</tr>
-				<tr>
-					<td><input type="checkbox"></td>
-					<td class="id-data">11010001</td>
-					<td>Nguyen Van A</td>
-					<td>Male</td>
-					<td>1982/01/01</td>
-					<td>123 No Trang Long</td>
-				</tr>
-				<tr>
-					<td><input type="checkbox"></td>
-					<td class="id-data">11010001</td>
-					<td>Nguyen Van A</td>
-					<td>Male</td>
-					<td>1982/01/01</td>
-					<td>123 No Trang Long</td>
-				</tr>
-				<tr>
-					<td><input type="checkbox"></td>
-					<td class="id-data">11010001</td>
-					<td>Nguyen Van A</td>
-					<td>Male</td>
-					<td>1982/01/01</td>
-					<td>123 No Trang Long</td>
-				</tr>
-				<tr>
-					<td><input type="checkbox"></td>
-					<td class="id-data">11010001</td>
-					<td>Nguyen Van A</td>
-					<td>Male</td>
-					<td>1982/01/01</td>
-					<td>123 No Trang Long</td>
-				</tr>
-				<tr>
-					<td><input type="checkbox"></td>
-					<td class="id-data">11010001</td>
-					<td>Nguyen Van A</td>
-					<td>Male</td>
-					<td>1982/01/01</td>
-					<td>123 No Trang Long</td>
-				</tr>
-				<tr>
-					<td><input type="checkbox"></td>
-					<td class="id-data">11010001</td>
-					<td>Nguyen Van A</td>
-					<td>Male</td>
-					<td>1982/01/01</td>
-					<td>123 No Trang Long</td>
-				</tr>
-				<tr>
-					<td><input type="checkbox"></td>
-					<td class="id-data">11010001</td>
-					<td>Nguyen Van A</td>
-					<td>Male</td>
-					<td>1982/01/01</td>
-					<td>123 No Trang Long</td>
-				</tr>
-				<tr>
-					<td><input type="checkbox"></td>
-					<td class="id-data">11010001</td>
-					<td>Nguyen Van A</td>
-					<td>Male</td>
-					<td>1982/01/01</td>
-					<td>123 No Trang Long</td>
-				</tr>
-				<tr>
-					<td><input type="checkbox"></td>
-					<td class="id-data">11010001</td>
-					<td>Nguyen Van A</td>
-					<td>Male</td>
-					<td>1982/01/01</td>
-					<td>123 No Trang Long</td>
-				</tr>
-				<tr>
-					<td><input type="checkbox"></td>
-					<td class="id-data">11010001</td>
-					<td>Nguyen Van A</td>
-					<td>Male</td>
-					<td>1982/01/01</td>
-					<td>123 No Trang Long</td>
-				</tr>
+        <div class="blue-bar"></div>
 
-			</tbody>
-		</table>
-		<div class="actions">
-			<button class="btn-add">Add New</button>
-			<button class="btn-delete">Delete</button>
-		</div>
-	</div>
-	<%@ include file="Footer.jsp"%>
+        <div class="search-form">
+            <label>Customer Name <input type="text" name="customerName"></label>
+            <label>Sex 
+                <select name="sex">
+                    <option value=""></option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                </select>
+            </label> 
+            <label>Birthday 
+                <input type="text" name="birthdayFrom"> - 
+                <input type="text" name="birthdayTo">
+            </label>
+            <button type="submit">Search</button>
+        </div>
+
+        <div class="btn-pagination">
+            <div class="previous">
+                <form action="T002" method="get" style="display:inline;">
+                    <input type="hidden" name="page" value="1">
+                    <button type="submit" <%= disableFirst ? "disabled" : "" %>>&lt;&lt;</button>
+                </form>
+                <form action="T002" method="get" style="display:inline;">
+                    <input type="hidden" name="page" value="<%= currentPage - 1 %>">
+                    <button type="submit" <%= disablePrevious ? "disabled" : "" %>>&lt;</button>
+                </form>
+                <span>Previous</span>
+            </div>
+            <div class="next">
+                <span>Next</span>
+                <form action="T002" method="get" style="display:inline;">
+                    <input type="hidden" name="page" value="<%= currentPage + 1 %>">
+                    <button type="submit" <%= disableNext ? "disabled" : "" %>>&gt;</button>
+                </form>
+                <form action="T002" method="get" style="display:inline;">
+                    <input type="hidden" name="page" value="<%= totalPages %>">
+                    <button type="submit" <%= disableLast ? "disabled" : "" %>>&gt;&gt;</button>
+                </form>
+            </div>
+            <div>
+                <span>Page <%= currentPage %> of <%= totalPages %></span>
+            </div>
+        </div>
+
+        <table class="customer-table">
+            <thead>
+                <tr>
+                    <th class="select">☐</th>
+                    <th class="customer-id">Customer ID</th>
+                    <th class="customer-name">Customer Name</th>
+                    <th class="sex">Sex</th>
+                    <th class="birthday">Birthday</th>
+                    <th class="address">Address</th>
+                </tr>
+            </thead>
+            <tbody>
+                <%
+                if (customers != null && !customers.isEmpty()) {
+                    for (T002Dto customer : customers) {
+                %>
+                <tr>
+                    <td><input type="checkbox"></td>
+                    <td class="id-data"><a id="llblCustomerID"
+                        href="T003?customerId=<%=customer.getCustomerID()%>"><%=customer.getCustomerID()%></a></td>
+                    <td><%=customer.getCustomerName()%></td>
+                    <td><%=customer.getSex()%></td>
+                    <td><%=customer.getBirthday()%></td>
+                    <td><%=customer.getAddress()%></td>
+                </tr>
+                <%
+                    }
+                } else {
+                %>
+                <tr>
+                    <td colspan="6" style="text-align: center;">Không có khách hàng nào.</td>
+                </tr>
+                <%
+                }
+                %>
+            </tbody>
+        </table>
+
+        <div class="actions">
+            <button class="btn-add">Add New</button>
+            <button class="btn-delete" <%= disableDelete ? "disabled" : "" %>>Delete</button>
+        </div>
+    </div>
+
+    <%@ include file="Footer.jsp"%>
 </body>
-
 </html>

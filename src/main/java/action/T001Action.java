@@ -1,6 +1,7 @@
 package action;
 
 import java.io.IOException;
+import java.sql.SQLException;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -8,87 +9,91 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import common.Constant;
 import dto.T001Dto;
 import service.T001Service;
 
 /**
- * T001Action
+ * Servlet responsible for handling user login requests.
  *
- * Chức năng: Xử lý yêu cầu đăng nhập của người dùng.
- * Chuyển hướng đến màn hình T002 khi đăng nhập thành công.
+ * <p>
+ * This servlet displays the login page via
+ * {@link #doGet(HttpServletRequest, HttpServletResponse)} and processes login
+ * submissions via {@link #doPost(HttpServletRequest, HttpServletResponse)}.
+ * Successful login redirects the user to screen {@code T002}, while failed
+ * login redisplays the login page with an error message.
+ * </p>
  *
  * @author YourName
- * @since 2025-07-20
+ * @version 1.1
+ * @since 2025-07-21
  */
 @WebServlet("/T001")
 public class T001Action extends HttpServlet {
+
 	private static final long serialVersionUID = 1L;
 
-	/** Service xử lý nghiệp vụ đăng nhập */
-	private final T001Service t001Service = new T001Service();
+	/** Singleton service instance for handling login business logic */
+	private final T001Service t001Service = T001Service.getInstance();
 
-	/**
-	 * Xử lý yêu cầu HTTP GET. Hiển thị màn hình đăng nhập.
-	 *
-	 * @param request  đối tượng HttpServletRequest
-	 * @param response đối tượng HttpServletResponse
-	 * @throws ServletException nếu xảy ra lỗi servlet
-	 * @throws IOException      nếu xảy ra lỗi nhập/xuất
-	 */
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		// Chuyển tiếp đến trang đăng nhập
-		RequestDispatcher requestDispatcher = request.getRequestDispatcher(Constant.T001);
-		requestDispatcher.forward(request, response);
+		RequestDispatcher dispatcher = request.getRequestDispatcher(Constant.T001);
+		dispatcher.forward(request, response);
 	}
 
-	/**
-	 * Xử lý yêu cầu HTTP POST. Kiểm tra dữ liệu người dùng nhập và xác thực thông
-	 * tin đăng nhập.
-	 *
-	 * @param request  đối tượng HttpServletRequest
-	 * @param response đối tượng HttpServletResponse
-	 * @throws ServletException nếu xảy ra lỗi servlet
-	 * @throws IOException      nếu xảy ra lỗi nhập/xuất
-	 */
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 
-		// Lấy dữ liệu từ form
+		// Retrieve form data
 		String userId = request.getParameter("txtuserID");
 		String password = request.getParameter("txtpassword");
 
-		// (1) Kiểm tra User ID có rỗng không
+		// (1) Validate User ID
 		if (userId == null || userId.trim().isEmpty()) {
-			request.setAttribute("errorMessage", "Vui lòng nhập User ID.");
+			request.setAttribute("errorMessage", "Please enter User ID.");
 			request.getRequestDispatcher(Constant.T001).forward(request, response);
 			return;
 		}
 
-		// (2) Kiểm tra Password có rỗng không
+		// (2) Validate Password
 		if (password == null || password.trim().isEmpty()) {
-			request.setAttribute("errorMessage", "Vui lòng nhập Password.");
+			request.setAttribute("errorMessage", "Please enter Password.");
 			request.getRequestDispatcher(Constant.T001).forward(request, response);
 			return;
 		}
 
-		// (3) Xác thực thông tin đăng nhập thông qua Service
-		T001Dto t001Dto = new T001Dto();
-		t001Dto.setUserId(userId);
-		t001Dto.setPassword(password);
-		boolean isValidUser = t001Service.login(t001Dto);
+		// (3) Authenticate credentials using Service
+		T001Dto t001Dto = new T001Dto(userId, password);
+		int countUser;
+		try {
+			countUser = t001Service.login(t001Dto);
+		} catch (SQLException e) {
+			throw new ServletException("Database error occurred during login.", e);
+		}
 
-		if (!isValidUser) {
-			// (3.1) Đăng nhập thất bại: quay lại màn hình login với thông báo lỗi
-			request.setAttribute("errorMessage", "User ID hoặc Password không đúng.");
-			request.getRequestDispatcher(Constant.T001).forward(request, response);
+		// (4) Handle authentication result
+		if (countUser == 1) {
+			String userName;
+			try {
+				userName = t001Service.getUserName(userId);
+			} catch (SQLException e) {
+				throw new ServletException("Database error occurred while retrieving user name.", e);
+			}
+
+			HttpSession session = request.getSession();
+			session.setAttribute("userName", userName);
+
+			// Successful login: redirect to screen T002
+			response.sendRedirect(request.getContextPath() + "/T002");
 		} else {
-			// (3.2) Đăng nhập thành công: điều hướng sang màn hình T002
-			response.sendRedirect("/Servlet-blank/T002");
+			// Failed login: redisplay login with error message
+			request.setAttribute("errorMessage", "Invalid User ID or Password.");
+			request.getRequestDispatcher(Constant.T001).forward(request, response);
 		}
 	}
 }

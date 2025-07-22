@@ -1,27 +1,35 @@
 package dto;
 
 /**
- * Lớp T001Dto là Data Transfer Object (DTO) dùng để truyền dữ liệu đăng nhập
- * giữa các tầng Controller, Service và DAO.
+ * Data Transfer Object (DTO) for transferring login information
+ * between the Controller, Service, and DAO layers.
+ *
+ * <p>This class holds the user credentials used for authentication.</p>
+ *
+ * @author YourName
+ * @version 1.0
+ * @since 2025-07-21
  */
 public class T001Dto {
 
-    /** Mã định danh của người dùng */
+    /** Unique identifier of the user */
     private String userId;
 
-    /** Mật khẩu của người dùng */
+    /** Password of the user */
     private String password;
 
     /**
-     * Constructor mặc định.
+     * Default constructor.
      */
-    public T001Dto() { }
+    public T001Dto() {
+    }
 
     /**
-     * Constructor khởi tạo đầy đủ.
+     * Parameterized constructor for creating a {@code T001Dto} instance
+     * with specified user ID and password.
      *
-     * @param userId   User ID
-     * @param password Password
+     * @param userId   the user ID
+     * @param password the password
      */
     public T001Dto(String userId, String password) {
         this.userId = userId;
@@ -29,36 +37,36 @@ public class T001Dto {
     }
 
     /**
-     * Lấy User ID.
+     * Returns the user ID.
      *
-     * @return User ID
+     * @return the user ID
      */
     public String getUserId() {
         return userId;
     }
 
     /**
-     * Thiết lập User ID.
+     * Sets the user ID.
      *
-     * @param userId User ID cần thiết lập
+     * @param userId the user ID to set
      */
     public void setUserId(String userId) {
         this.userId = userId;
     }
 
     /**
-     * Lấy mật khẩu.
+     * Returns the password.
      *
-     * @return Password
+     * @return the password
      */
     public String getPassword() {
         return password;
     }
 
     /**
-     * Thiết lập mật khẩu.
+     * Sets the password.
      *
-     * @param password Password cần thiết lập
+     * @param password the password to set
      */
     public void setPassword(String password) {
         this.password = password;
