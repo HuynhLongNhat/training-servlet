@@ -1,6 +1,7 @@
 package service;
 
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Map;
 
 import dao.T002Dao;
@@ -20,6 +21,15 @@ import dao.T002Dao;
  * @author YourName
  * @version 2.0
  * @since 2025-07-21
+ */
+/**
+ * 
+ */
+/**
+ * 
+ */
+/**
+ * 
  */
 public class T002Service {
 
@@ -60,4 +70,18 @@ public class T002Service {
                                                int offset, int limit) throws SQLException {
         return t002Dao.searchCustomers(userName, sex, birthdayFrom, birthdayTo, offset, limit);
     }
+    
+    
+    /**
+     * Deletes customers based on the provided list of IDs.
+     *
+     * @param customerIds the list of customer IDs to be marked as deleted
+     * @throws SQLException if a database access error occurs
+     */
+    public void deleteCustomers(List<String> customerIds) throws SQLException {
+        t002Dao.deleteCustomer(customerIds);
+    }
+
+    
+    
 }

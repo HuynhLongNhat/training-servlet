@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import dto.T002Dto;
 import utils.DBUtils;
@@ -130,4 +131,27 @@ public class T002Dao {
         dto.setAddress(rs.getString("ADDRESS"));
         return dto;
     }
+    
+    /**
+     * Marks customers as deleted by updating their {@code DELETE_YMD} to the current date.
+     *
+     * @param customerIds list of customer IDs to be marked as deleted
+     * @throws SQLException if a database access error occurs during the update
+     */
+    public void deleteCustomer(List<String> customerIds) throws SQLException {
+        if (customerIds == null || customerIds.isEmpty()) return;
+        String sql = "UPDATE MSTCUSTOMER SET DELETE_YMD = GETDATE() WHERE CUSTOMER_ID IN (" +
+                customerIds.stream().map(id -> "?").collect(Collectors.joining(",")) + ")";
+
+        try (Connection conn = DBUtils.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            for (int i = 0; i < customerIds.size(); i++) {
+                ps.setString(i + 1, customerIds.get(i));
+            }
+            ps.executeUpdate();
+        }
+    }
+
+    
 }
