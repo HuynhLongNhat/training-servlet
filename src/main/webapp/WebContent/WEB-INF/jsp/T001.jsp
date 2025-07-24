@@ -35,6 +35,6 @@
 	</div>
 	<%@ include file="Footer.jsp"%>
 
-	<script src="${pageContext.request.contextPath}/WebContent/js/T001.js"></script>
+	<script src="${pageContext.request.contextPath}/WebContent/js/script.js"></script>
 </body>
 </html>

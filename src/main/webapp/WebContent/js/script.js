@@ -9,3 +9,8 @@ function resetFormFields() {
 			}
 
 		}
+function showErrorMessage(message) {
+		    if (message && message.trim() !== "") {
+		        alert(message);
+		    }
+		}

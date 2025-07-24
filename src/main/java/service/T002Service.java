@@ -1,10 +1,9 @@
 package service;
 
 import java.sql.SQLException;
-import java.util.List;
+import java.util.Map;
 
 import dao.T002Dao;
-import dto.T002Dto;
 
 /**
  * Service class that handles business logic related to customers.
@@ -12,17 +11,14 @@ import dto.T002Dto;
  * <p>This class acts as a bridge between the controller layer and
  * the {@link T002Dao} data access layer.</p>
  * 
- * <p>Responsibilities include:</p>
- * <ul>
- *     <li>Fetching paginated customer lists.</li>
- *     <li>Retrieving the total number of active customers.</li>
- * </ul>
+ * <p>Provides methods to fetch customer lists with pagination and search filters,
+ * along with the total count of matching customers.</p>
  * 
  * <p>Implements the Singleton pattern to ensure a single instance
  * is used throughout the application.</p>
  * 
  * @author YourName
- * @version 1.1
+ * @version 2.0
  * @since 2025-07-21
  */
 public class T002Service {
@@ -33,12 +29,8 @@ public class T002Service {
     /** Reference to the data access object (DAO) for customers. */
     private final T002Dao t002Dao = T002Dao.getInstance();
 
-    /** 
-     * Private constructor to prevent external instantiation. 
-     */
-    private T002Service() {
-        // Prevent instantiation
-    }
+    /** Private constructor to prevent external instantiation. */
+    private T002Service() {}
 
     /**
      * Provides access to the single instance of {@code T002Service}.
@@ -50,24 +42,22 @@ public class T002Service {
     }
 
     /**
-     * Retrieves a paginated list of active customers.
+     * Retrieves customers with optional search filters and pagination.
      *
-     * @param offset   the number of records to skip (zero-based)
-     * @param pageSize the maximum number of records to retrieve
-     * @return a list of {@link T002Dto} representing the customers
+     * @param userName      customer name filter (nullable)
+     * @param sex           gender filter: "0" for Male, "1" for Female (nullable)
+     * @param birthdayFrom  birthday from date filter (nullable)
+     * @param birthdayTo    birthday to date filter (nullable)
+     * @param offset        row index to start (zero-based)
+     * @param limit         maximum number of records to retrieve
+     * @return a map containing:
+     *         - "customers": List&lt;T002Dto&gt; of customers
+     *         - "totalCount": Integer total matching records
      * @throws SQLException if a database access error occurs
      */
-    public List<T002Dto> getAllCustomers(int offset, int pageSize) throws SQLException {
-        return t002Dao.getAllCustomers(offset, pageSize);
-    }
-
-    /**
-     * Retrieves the total number of active customers.
-     *
-     * @return the total count of active customers
-     * @throws SQLException if a database access error occurs
-     */
-    public int getTotalCustomerCount() throws SQLException {
-        return t002Dao.getTotalCustomerCount();
+    public Map<String, Object> searchCustomers(String userName, String sex,
+                                               String birthdayFrom, String birthdayTo,
+                                               int offset, int limit) throws SQLException {
+        return t002Dao.searchCustomers(userName, sex, birthdayFrom, birthdayTo, offset, limit);
     }
 }
