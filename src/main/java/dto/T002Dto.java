@@ -26,7 +26,10 @@ public class T002Dto {
 
 	/** Birthday of the customer */
 	private String birthday;
-
+  
+	/** Email of the customer */
+	private String email ;
+	
 	/** Address of the customer */
 	private String address;
 
@@ -100,6 +103,24 @@ public class T002Dto {
 	}
 
 	/**
+	 * Sets the customer's email.
+	 *
+	 * @param email the customer's email to set
+	 */
+	public void setEmail(String email) {
+		this.email = email;
+	}
+	
+	/**
+	 * Gets the customer's email.
+	 *
+	 * @return the customer's email
+	 */
+	public String getEmail() {
+		return email;
+	}
+
+	/**
 	 * Sets the customer's birthday.
 	 *
 	 * @param birthday the customer's birthday to set
@@ -107,6 +128,8 @@ public class T002Dto {
 	public void setBirthday(String birthday) {
 		this.birthday = birthday;
 	}
+	
+	
 
 	/**
 	 * Gets the customer's address.

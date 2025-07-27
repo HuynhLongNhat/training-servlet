@@ -26,7 +26,6 @@
 
     String errorMessage = (String) request.getAttribute("errorMessage");
     
-    System.out.println("errorMessage :" + errorMessage);
 %>
 
 <div class="container">
@@ -81,9 +80,7 @@
                 <button type="submit" <%=disableLast ? "disabled" : ""%>>&gt;&gt;</button>
             </form>
         </div>
-        <div>
-            <span>Page <%=currentPage%> of <%=totalPages%></span>
-        </div>
+       
     </div>
 
     <!-- Customer list and Delete form -->
