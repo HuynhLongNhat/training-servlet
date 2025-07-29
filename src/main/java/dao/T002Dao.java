@@ -14,22 +14,24 @@ import dto.T002Dto;
 import utils.DBUtils;
 
 /**
- * Data Access Object (DAO) for handling customer information.
- *
+ * DAO for handling customer information in the {@code MSTCUSTOMER} table.
  * <p>
- * Provides a single method {@code searchCustomers} to retrieve customers
- * with optional search filters, pagination, and total count.
+ * Provides methods for searching customers with filters, pagination, and marking customers as deleted.
  * </p>
  */
 public class T002Dao {
 
-    /** Singleton eager instance */
+    /** Singleton instance */
     private static final T002Dao instance = new T002Dao();
 
     /** Private constructor to prevent external instantiation */
     private T002Dao() {}
 
-    /** Returns the singleton instance */
+    /**
+     * Returns the singleton instance of {@code T002Dao}.
+     *
+     * @return singleton {@code T002Dao} instance
+     */
     public static T002Dao getInstance() {
         return instance;
     }
@@ -37,22 +39,22 @@ public class T002Dao {
     /**
      * Searches customers with optional filters and pagination.
      *
-     * @param userName      Customer name (nullable)
-     * @param sex           Gender: "0" for Male, "1" for Female (nullable)
-     * @param birthdayFrom  Birthday from date (nullable)
-     * @param birthdayTo    Birthday to date (nullable)
-     * @param offset        Row index to start
-     * @param limit         Maximum number of rows to return
-     * @return Map containing:
-     *         - "customers": List&lt;T002Dto&gt; of customers
-     *         - "totalCount": Integer total matching records
+     * @param userName      optional customer name filter (nullable)
+     * @param sex           optional gender filter: "0" = Male, "1" = Female (nullable)
+     * @param birthdayFrom  optional birthday start date (nullable)
+     * @param birthdayTo    optional birthday end date (nullable)
+     * @param offset        starting row index for pagination
+     * @param limit         maximum number of rows to return
+     * @return map with keys:
+     *         - {@code "customers"}: list of {@link T002Dto} matching the filters
+     *         - {@code "totalCount"}: total number of matching records
      * @throws SQLException if a database access error occurs
      */
     public Map<String, Object> searchCustomers(String userName, String sex,
                                                String birthdayFrom, String birthdayTo,
                                                int offset, int limit) throws SQLException {
 
-        // Build WHERE clause
+        // Build dynamic WHERE clause based on provided filters
         List<Object> params = new ArrayList<>();
         StringBuilder whereClause = new StringBuilder(" WHERE DELETE_YMD IS NULL");
 
@@ -73,28 +75,29 @@ public class T002Dao {
             params.add(birthdayTo.trim());
         }
 
-        // 1. Query total count
-        int totalCount = 0;
+        // Get total count of matching records
+        int totalCount;
         try (Connection conn = DBUtils.getInstance().getConnection();
              PreparedStatement psCount = conn.prepareStatement("SELECT COUNT(*) FROM MSTCUSTOMER" + whereClause)) {
 
             setParameters(psCount, params);
             try (ResultSet rs = psCount.executeQuery()) {
-                if (rs.next()) {
-                    totalCount = rs.getInt(1);
-                }
+                totalCount = rs.next() ? rs.getInt(1) : 0;
             }
         }
 
-        // 2. Query customers with pagination
+        // Prepare SQL for paginated results
+        String sql = """
+                SELECT CUSTOMER_ID, CUSTOMER_NAME,
+                       CASE WHEN SEX = '0' THEN 'Male'
+                            WHEN SEX = '1' THEN 'Female' END AS SEX,
+                       BIRTHDAY, ADDRESS
+                FROM MSTCUSTOMER""" + whereClause + " ORDER BY CUSTOMER_ID OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
         List<Object> listParams = new ArrayList<>(params);
-        String sql = "SELECT CUSTOMER_ID, CUSTOMER_NAME, " +
-                "CASE WHEN SEX = '0' THEN 'Male' WHEN SEX = '1' THEN 'Female' END AS SEX, " +
-                "BIRTHDAY, ADDRESS FROM MSTCUSTOMER" + whereClause +
-                " ORDER BY CUSTOMER_ID OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
         listParams.add(offset);
         listParams.add(limit);
 
+        // Retrieve paginated list of customers
         List<T002Dto> customers = new ArrayList<>();
         try (Connection conn = DBUtils.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -107,21 +110,57 @@ public class T002Dao {
             }
         }
 
-        // Return both list and totalCount
+        // Combine total count and customer list into result map
         Map<String, Object> result = new HashMap<>();
         result.put("customers", customers);
         result.put("totalCount", totalCount);
         return result;
     }
 
-    /** Sets PreparedStatement parameters */
+    /**
+     * Marks customers as deleted by setting {@code DELETE_YMD} to the current date.
+     *
+     * @param customerIds list of customer IDs to mark as deleted
+     * @throws SQLException if the update operation fails
+     */
+    public void deleteCustomer(List<String> customerIds) throws SQLException {
+        if (customerIds == null || customerIds.isEmpty()) return;
+
+        // Build SQL query with placeholders for all IDs
+        String sql = "UPDATE MSTCUSTOMER SET DELETE_YMD = GETDATE() WHERE CUSTOMER_ID IN (" +
+                     customerIds.stream().map(id -> "?").collect(Collectors.joining(",")) + ")";
+
+        try (Connection conn = DBUtils.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            // Set each ID in the prepared statement
+            for (int i = 0; i < customerIds.size(); i++) {
+                ps.setString(i + 1, customerIds.get(i));
+            }
+            ps.executeUpdate();
+        }
+    }
+
+    /**
+     * Sets all parameters for a prepared statement.
+     *
+     * @param ps     prepared statement
+     * @param params list of parameter values
+     * @throws SQLException if setting any parameter fails
+     */
     private void setParameters(PreparedStatement ps, List<Object> params) throws SQLException {
         for (int i = 0; i < params.size(); i++) {
             ps.setObject(i + 1, params.get(i));
         }
     }
 
-    /** Maps a ResultSet row to a T002Dto */
+    /**
+     * Maps a {@link ResultSet} row to a {@link T002Dto}.
+     *
+     * @param rs result set pointing to the current row
+     * @return DTO populated with customer data
+     * @throws SQLException if reading from the result set fails
+     */
     private T002Dto mapRow(ResultSet rs) throws SQLException {
         T002Dto dto = new T002Dto();
         dto.setCustomerID(rs.getInt("CUSTOMER_ID"));
@@ -131,27 +170,4 @@ public class T002Dao {
         dto.setAddress(rs.getString("ADDRESS"));
         return dto;
     }
-    
-    /**
-     * Marks customers as deleted by updating their {@code DELETE_YMD} to the current date.
-     *
-     * @param customerIds list of customer IDs to be marked as deleted
-     * @throws SQLException if a database access error occurs during the update
-     */
-    public void deleteCustomer(List<String> customerIds) throws SQLException {
-        if (customerIds == null || customerIds.isEmpty()) return;
-        String sql = "UPDATE MSTCUSTOMER SET DELETE_YMD = GETDATE() WHERE CUSTOMER_ID IN (" +
-                customerIds.stream().map(id -> "?").collect(Collectors.joining(",")) + ")";
-
-        try (Connection conn = DBUtils.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            for (int i = 0; i < customerIds.size(); i++) {
-                ps.setString(i + 1, customerIds.get(i));
-            }
-            ps.executeUpdate();
-        }
-    }
-
-    
 }

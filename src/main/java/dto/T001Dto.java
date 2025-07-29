@@ -1,96 +1,97 @@
 package dto;
 
 /**
- * Data Transfer Object (DTO) for transferring login information between the
- * Controller, Service, and DAO layers.
- *
- * <p>
- * This class holds the user credentials used for authentication.
- * </p>
- *
+ * T001Dto - representing a user.
+ * Used for transferring user login credentials and related information across
+ * application layers.
+ * 
  * @author YourName
  * @version 1.0
  * @since 2025-07-21
  */
 public class T001Dto {
-	private Integer PSN_CD;
-	/** Unique identifier of the user */
-	private String userId;
 
-	/** Password of the user */
-	private String password;
+    /** Unique personal code of this user */
+    private Integer psnCd;
 
-	/** userName of the user */
-	private String userName;
+    /** User ID used for login authentication */
+    private String userId;
 
-	/**
-	 * Default constructor.
-	 */
-	public T001Dto() {
-	}
+    /** Password associated with this user account */
+    private String password;
 
-	/**
-	 * Parameterized constructor for creating a {@code T001Dto} instance with
-	 * specified user ID and password.
-	 *
-	 * @param userId   the user ID
-	 * @param password the password
-	 */
-	public T001Dto(String userId, String password) {
-		this.userId = userId;
-		this.password = password;
-	}
+    /** Display name of this user */
+    private String userName;
 
-	/**
-	 * Returns the user ID.
-	 *
-	 * @return the user ID
-	 */
-	public String getUserId() {
-		return userId;
-	}
+    /**
+     * Gets the personal code of the user.
+     *
+     * @return the personal code
+     */
+    public Integer getPsnCd() {
+        return psnCd;
+    }
 
-	/**
-	 * Sets the user ID.
-	 *
-	 * @param userId the user ID to set
-	 */
-	public void setUserId(String userId) {
-		this.userId = userId;
-	}
+    /**
+     * Sets the personal code of the user.
+     *
+     * @param psnCd the personal code to set
+     */
+    public void setPsnCd(Integer psnCd) {
+        this.psnCd = psnCd;
+    }
 
-	/**
-	 * Returns the password.
-	 *
-	 * @return the password
-	 */
-	public String getPassword() {
-		return password;
-	}
+    /**
+     * Gets the user ID.
+     *
+     * @return the user ID
+     */
+    public String getUserId() {
+        return userId;
+    }
 
-	/**
-	 * Sets the password.
-	 *
-	 * @param password the password to set
-	 */
-	public void setPassword(String password) {
-		this.password = password;
-	}
+    /**
+     * Sets the user ID.
+     *
+     * @param userId the user ID to set
+     */
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
 
-	public String getUserName() {
-		return userName;
-	}
+    /**
+     * Gets the password of the user.
+     *
+     * @return the password
+     */
+    public String getPassword() {
+        return password;
+    }
 
-	public void setUserName(String userName) {
-		this.userName = userName;
-	}
+    /**
+     * Sets the password of the user.
+     *
+     * @param password the password to set
+     */
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
-	public Integer getPSN_CD() {
-		return PSN_CD;
-	}
+    /**
+     * Gets the display name of the user.
+     *
+     * @return the user name
+     */
+    public String getUserName() {
+        return userName;
+    }
 
-	public void setPSN_CD(Integer PSN_CD) {
-		this.PSN_CD = PSN_CD;
-	}
-
+    /**
+     * Sets the display name of the user.
+     *
+     * @param userName the user name to set
+     */
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
 }
