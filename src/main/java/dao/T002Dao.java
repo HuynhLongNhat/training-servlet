@@ -124,7 +124,7 @@ public class T002Dao {
     /** Maps a ResultSet row to a T002Dto */
     private T002Dto mapRow(ResultSet rs) throws SQLException {
         T002Dto dto = new T002Dto();
-        dto.setCustomerID(rs.getString("CUSTOMER_ID"));
+        dto.setCustomerID(rs.getInt("CUSTOMER_ID"));
         dto.setCustomerName(rs.getString("CUSTOMER_NAME"));
         dto.setSex(rs.getString("SEX"));
         dto.setBirthday(rs.getString("BIRTHDAY"));

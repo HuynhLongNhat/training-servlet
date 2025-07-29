@@ -12,8 +12,10 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import common.Constant;
+import dto.T001Dto;
 import dto.T002Dto;
 import service.T003Service;
 
@@ -40,34 +42,33 @@ public class T003Action extends HttpServlet {
 
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
+	        throws ServletException, IOException {
 
-		String customerId = request.getParameter("customerId");
+	    String customerIdParam = request.getParameter("customerId");
+	    Integer customerId = null;
 
-		if (customerId != null && !customerId.trim().isEmpty()) {
-			T002Dto customer = t003Service.getCustomerById(customerId);
-			if (customer != null) {
-				request.setAttribute("customer", customer);
-				request.setAttribute("mode", "EDIT");
-			} else {
-				request.setAttribute("mode", "ADD");
-			}
-		} else {
-			request.setAttribute("mode", "ADD");
-		}
+	    if (customerIdParam != null && !customerIdParam.trim().isEmpty()) {
+	        try {
+	            customerId = Integer.parseInt(customerIdParam);
+	        } catch (NumberFormatException e) {
+	          e.printStackTrace();
+	        }
+	    }
 
-		RequestDispatcher dispatcher = request.getRequestDispatcher(Constant.T003);
-		dispatcher.forward(request, response);
-	}
+	    if (customerId != null) {
+	        T002Dto customer = t003Service.getCustomerById(customerId); 
+	        if (customer != null) {
+	            request.setAttribute("customer", customer);
+	            request.setAttribute("mode", "EDIT");
+	        } else {
+	            request.setAttribute("mode", "ADD");
+	        }
+	    } else {
+	        request.setAttribute("mode", "ADD");
+	    }
 
-	/**
-	 * Checks if a string is null or empty after trimming.
-	 *
-	 * @param value the string to check
-	 * @return {@code true} if null or empty, otherwise {@code false}
-	 */
-	private boolean isEmpty(String value) {
-		return value == null || value.trim().isEmpty();
+	    RequestDispatcher dispatcher = request.getRequestDispatcher(Constant.T003);
+	    dispatcher.forward(request, response);
 	}
 
 	/**
@@ -105,13 +106,26 @@ public class T003Action extends HttpServlet {
 	        throws ServletException, IOException {
 	    request.setCharacterEncoding("UTF-8");
 
-	    String customerId = request.getParameter("txtCustomerId");
+	    String customerIdParam = request.getParameter("txtCustomerId");
+	    Integer customerId = null;
+	    if (customerIdParam != null && !customerIdParam.isEmpty()) {
+	        try {
+	            customerId = Integer.parseInt(customerIdParam);
+	        } catch (NumberFormatException e) {
+	           e.printStackTrace();
+	        }
+	    }
 	    String customerName = request.getParameter("txtCustomerName");
 	    String sex = request.getParameter("cboSex");
 	    String birthday = request.getParameter("txtBirthday");
 	    String email = request.getParameter("txtEmail");
 	    String address = request.getParameter("txtAddress");
-	    String mode = request.getParameter("mode"); // "ADD" hoặc "EDIT"
+	    String mode;
+	    if (customerId == null) {
+	        mode = "ADD";
+	    } else {
+	        mode = "EDIT";
+	    }
 
 	    // Validate
 	    String birthdayError = validateBirthday(birthday);
@@ -129,7 +143,7 @@ public class T003Action extends HttpServlet {
 	        request.getRequestDispatcher(Constant.T003).forward(request, response);
 	        return;
 	    }
-
+	    
 	    // Map to DTO
 	    T002Dto customer = new T002Dto();
 	    customer.setCustomerID(customerId);
@@ -139,8 +153,13 @@ public class T003Action extends HttpServlet {
 	    customer.setEmail(email);
 	    customer.setAddress(address);
 
-	    // Lấy mã user đang đăng nhập
-	    String psnCd = (String) request.getSession().getAttribute("psnCd");
+	    HttpSession session = request.getSession(false);
+	    T001Dto loggedInUser = (T001Dto) session.getAttribute("user");
+
+	    Integer psnCd = null;
+	    if (loggedInUser != null) {
+	        psnCd = loggedInUser.getPSN_CD();  // getPsnCd() trả về Integer
+	    }
 
 	    try {
 	        boolean success;

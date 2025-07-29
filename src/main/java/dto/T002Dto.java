@@ -16,7 +16,7 @@ package dto;
 public class T002Dto {
 
 	/** Unique identifier of the customer */
-	private String customerID;
+	private Integer customerID;
 
 	/** Name of the customer */
 	private String customerName;
@@ -44,7 +44,7 @@ public class T002Dto {
 	 *
 	 * @return the customer's ID
 	 */
-	public String getCustomerID() {
+	public Integer getCustomerID() {
 		return customerID;
 	}
 
@@ -53,7 +53,7 @@ public class T002Dto {
 	 *
 	 * @param customerID the customer's ID to set
 	 */
-	public void setCustomerID(String customerID) {
+	public void setCustomerID(Integer customerID) {
 		this.customerID = customerID;
 	}
 

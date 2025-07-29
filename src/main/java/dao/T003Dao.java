@@ -20,7 +20,7 @@ public class T003Dao {
 		return instance;
 	}
 
-	public T002Dto getCustomerById(String customerId) {
+	public T002Dto getCustomerById(Integer customerId) {
 	    String query = "SELECT CUSTOMER_ID, CUSTOMER_NAME, SEX, BIRTHDAY, EMAIL, ADDRESS " +
 	                   "FROM MSTCUSTOMER " +
 	                   "WHERE CUSTOMER_ID = ? AND DELETE_YMD IS NULL";
@@ -28,11 +28,11 @@ public class T003Dao {
 	    try (Connection conn = DBUtils.getInstance().getConnection();
 	         PreparedStatement stmt = conn.prepareStatement(query)) {
 
-	        stmt.setString(1, customerId);
+	        stmt.setInt(1, customerId);
 	        try (ResultSet rs = stmt.executeQuery()) {
 	            if (rs.next()) {
 	                T002Dto customer = new T002Dto();
-	                customer.setCustomerID(rs.getString("CUSTOMER_ID"));
+	                customer.setCustomerID(rs.getInt("CUSTOMER_ID"));
 	                customer.setCustomerName(rs.getString("CUSTOMER_NAME"));
 	                customer.setSex(rs.getString("SEX"));
 	                customer.setBirthday(rs.getString("BIRTHDAY"));
@@ -46,11 +46,11 @@ public class T003Dao {
 	    }
 	    return null;
 	}
-    
-	public int insertCustomer(T002Dto customer, String psnCd) {
-	    String sql = "INSERT INTO MSTCUSTOMER (CUSTOMER_ID, CUSTOMER_NAME, SEX, BIRTHDAY, EMAIL, ADDRESS, " +
-	                 "DELETE_YMD, INSERT_YMD, INSERT_PSN_CD, UPDATE_YMD, UPDATE_PSN_CD) " +
-	                 "VALUES (SEQ_CUSTOMER_ID.NEXTVAL, ?, ?, ?, ?, ?, NULL, CURRENT_TIMESTAMP, ?, CURRENT_TIMESTAMP, ?)";
+	
+	public boolean insertCustomer(T002Dto customer, Integer psnCd) {
+		 String sql = "INSERT INTO MSTCUSTOMER (CUSTOMER_ID, CUSTOMER_NAME, SEX, BIRTHDAY, EMAIL, ADDRESS, " +
+                 "DELETE_YMD, INSERT_YMD, INSERT_PSN_CD, UPDATE_YMD, UPDATE_PSN_CD) " +
+                 "VALUES (NEXT VALUE FOR SEQ_CUSTOMER_ID, ?, ?, ?, ?, ?, NULL, CURRENT_TIMESTAMP, ?, CURRENT_TIMESTAMP, ?)";
 	    try (Connection conn = DBUtils.getInstance().getConnection();
 	         PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -59,17 +59,17 @@ public class T003Dao {
 	        stmt.setString(3, customer.getBirthday());
 	        stmt.setString(4, customer.getEmail());
 	        stmt.setString(5, customer.getAddress());
-	        stmt.setString(6, psnCd);
-	        stmt.setString(7, psnCd);
+	        stmt.setInt(6, psnCd);
+	        stmt.setInt(7, psnCd);
 
-	        return stmt.executeUpdate();
+	        return stmt.executeUpdate() > 0;
 	    } catch (Exception e) {
 	        e.printStackTrace();
 	    }
-	    return 0;
+	    return false;
 	}
-	
-	public int updateCustomer(T002Dto customer, String psnCd) {
+
+	public boolean updateCustomer(T002Dto customer, Integer psnCd) {
 	    String sql = "UPDATE MSTCUSTOMER " +
 	                 "SET CUSTOMER_NAME = ?, SEX = ?, BIRTHDAY = ?, EMAIL = ?, ADDRESS = ?, " +
 	                 "DELETE_YMD = NULL, UPDATE_YMD = CURRENT_TIMESTAMP, UPDATE_PSN_CD = ? " +
@@ -82,16 +82,15 @@ public class T003Dao {
 	        stmt.setString(3, customer.getBirthday());
 	        stmt.setString(4, customer.getEmail());
 	        stmt.setString(5, customer.getAddress());
-	        stmt.setString(6, psnCd);
-	        stmt.setString(7, customer.getCustomerID());
+	        stmt.setInt(6, psnCd);
+	        stmt.setInt(7, customer.getCustomerID());
 
-	        return stmt.executeUpdate();
+	        return stmt.executeUpdate() > 0;
 	    } catch (Exception e) {
 	        e.printStackTrace();
 	    }
-	    return 0;
+	    return false;
 	}
-
 
 
 }

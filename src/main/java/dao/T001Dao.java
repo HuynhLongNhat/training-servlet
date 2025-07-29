@@ -39,7 +39,7 @@ public class T001Dao {
      * @throws SQLException if a database access error occurs
      */
     public T001Dto getUserLogin(T001Dto inputDto) throws SQLException {
-        String sql = "SELECT USERID, USERNAME "
+        String sql = "SELECT USERID, USERNAME , PSN_CD "
                    + "FROM MSTUSER "
                    + "WHERE DELETE_YMD IS NULL AND USERID = ? AND PASSWORD = ?";
 
@@ -54,6 +54,7 @@ public class T001Dao {
                     T001Dto userDto = new T001Dto();
                     userDto.setUserId(rs.getString("USERID"));
                     userDto.setUserName(rs.getString("USERNAME"));
+                    userDto.setPSN_CD(rs.getInt("PSN_CD"));
                     return userDto; // Trả về DTO nếu tìm thấy user
                 }
             }

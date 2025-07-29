@@ -30,18 +30,15 @@ public class T003Service {
      * @param customerId the customer ID
      * @return a {@link T002Dto} object if found, otherwise {@code null}
      */
-    public T002Dto getCustomerById(String customerId) {
-        if (customerId == null || customerId.trim().isEmpty()) {
-            return null;
-        }
+    public T002Dto getCustomerById(Integer customerId) {
         return t003Dao.getCustomerById(customerId);
     }
     
-    public boolean insertCustomer(T002Dto customer, String psnCd) throws SQLException {
-        return t003Dao.insertCustomer(customer, psnCd) > 0;
+    public boolean insertCustomer(T002Dto customer, Integer psnCd) throws SQLException {
+        return t003Dao.insertCustomer(customer, psnCd);
     }
 
-    public boolean updateCustomer(T002Dto customer, String psnCd) throws SQLException {
-        return t003Dao.updateCustomer(customer, psnCd) > 0;
+    public boolean updateCustomer(T002Dto customer, Integer psnCd) throws SQLException {
+        return t003Dao.updateCustomer(customer, psnCd) ;
     }
 }
