@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 
 import dao.T002Dao;
+import dto.T002Dto;
+import dto.T002SCO;
 
 /**
  * Service class for handling business logic related to customers.
@@ -42,24 +44,27 @@ public class T002Service {
     }
 
     /**
-     * Retrieves customers based on optional filters and pagination.
+     * Searches customers using search condition object and pagination.
      *
-     * @param userName      filter by customer name (nullable)
-     * @param sex           filter by gender: "0" for Male, "1" for Female (nullable)
-     * @param birthdayFrom  filter by start birthday date (nullable)
-     * @param birthdayTo    filter by end birthday date (nullable)
-     * @param offset        zero-based index of the first row to fetch
-     * @param limit         maximum number of rows to return
-     * @return a map containing:
-     *         - "customers": {@code List<T002Dto>} of customers
-     *         - "totalCount": {@code Integer} total number of matching records
-     * @throws SQLException if a database access error occurs
+     * @param sco    search condition object containing filters
+     * @param offset starting row for pagination
+     * @param limit  number of rows per page
+     * @return a map with keys:
+     *         - "customers": list of {@link T002Dto}
+     *         - "totalCount": total matching records
+     * @throws SQLException if database access fails
      */
-    public Map<String, Object> searchCustomers(String userName, String sex,
-                                               String birthdayFrom, String birthdayTo,
-                                               int offset, int limit) throws SQLException {
-        return t002Dao.searchCustomers(userName, sex, birthdayFrom, birthdayTo, offset, limit);
+    public Map<String, Object> searchCustomers(T002SCO sco, int offset, int limit) throws SQLException {
+        return t002Dao.searchCustomers(
+            sco != null ? sco.getCustomerName() : null,
+            sco != null ? sco.getSex() : null,
+            sco != null ? sco.getBirthdayFrom() : null,
+            sco != null ? sco.getBirthdayTo() : null,
+            offset,
+            limit
+        );
     }
+
 
     /**
      * Marks customers as deleted based on the provided list of IDs.

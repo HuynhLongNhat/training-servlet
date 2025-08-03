@@ -14,10 +14,12 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import common.Constant;
 import common.Helper;
 import dto.T002Dto;
+import dto.T002SCO;
 import service.T002Service;
 
 /**
@@ -65,22 +67,22 @@ public class T002Action extends HttpServlet {
 	/**
 	 * Handles GET requests for T002 screen.
 	 *
-	 * @param HttpServletRequest request
+	 * @param HttpServletRequest  request
 	 * @param HttpServletResponse response
 	 * @throws ServletException
 	 * @throws IOException
 	 */
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
-	        throws ServletException, IOException {
-	    findCustomer(request, response);
+			throws ServletException, IOException {
+		findCustomer(request, response);
 	}
 
 	/**
 	 * Handles POST requests for T002 screen. Supports both search and delete
 	 * actions.
 	 *
-	 * @param HttpServletRequest request
+	 * @param HttpServletRequest  request
 	 * @param HttpServletResponse response
 	 * @throws ServletException
 	 * @throws IOException
@@ -110,21 +112,37 @@ public class T002Action extends HttpServlet {
 			throws ServletException, IOException {
 
 		// Validate session
-		if (!Helper.isValidSession(request)) {
+		if (!Helper.isLogin(request)) {
 			response.sendRedirect(request.getContextPath() + "/T001");
 			return;
 		}
+		String actionType = request.getParameter("actionType");
+		HttpSession session = request.getSession();
 
-		// Get search parameters
-		String userName = request.getParameter("lblUserName");
-		String sex = request.getParameter("cboSex");
-		String birthdayFrom = request.getParameter("txtBirthdayForm");
-		String birthdayTo = request.getParameter("txtBirthdayTo");
+		// Get search condition object from session
+		T002SCO sco = (T002SCO) session.getAttribute("T002SCO");
+		if (sco == null) {
+			sco = new T002SCO();
+		}
 
-		// Check if search is triggered
-		boolean isSearch = !Helper.isEmpty(userName) || !Helper.isEmpty(sex) || !Helper.isEmpty(birthdayFrom)
-				|| !Helper.isEmpty(birthdayTo);
+		if ("search".equals(actionType)) {
+			// Get from request
+			sco = new T002SCO();
+			sco.setCustomerName(request.getParameter("lblUserName"));
+			sco.setSex(request.getParameter("cboSex"));
+			sco.setBirthdayFrom(request.getParameter("txtBirthdayForm"));
+			sco.setBirthdayTo(request.getParameter("txtBirthdayTo"));
 
+			// Validate input
+			String errorMessage = validateBirthdayInput(sco.getBirthdayFrom(), sco.getBirthdayTo());
+			if (errorMessage != null) {
+				request.setAttribute("errorMessage", errorMessage);
+				// Reset search if invalid
+				sco = new T002SCO(); 
+			}
+			// Save SCO into session
+			session.setAttribute("T002SCO", sco);
+		}
 		// Handle pagination
 		int currentPage;
 		try {
@@ -136,18 +154,8 @@ public class T002Action extends HttpServlet {
 		int offset = (currentPage - 1) * PAGE_SIZE;
 
 		try {
-			// Validate birthday range if searching
-			String errorMessage = isSearch ? validateBirthdayInput(birthdayFrom, birthdayTo) : null;
-			if (errorMessage != null) {
-				request.setAttribute("errorMessage", errorMessage);
-
-				// Reset filters if validation fails
-				userName = sex = birthdayFrom = birthdayTo = null;
-			}
-
 			// Fetch customer data from service
-			Map<String, Object> data = t002Service.searchCustomers(userName, sex, birthdayFrom, birthdayTo, offset,
-					PAGE_SIZE);
+			Map<String, Object> data = t002Service.searchCustomers(sco, offset, PAGE_SIZE);
 			List<T002Dto> customers = (List<T002Dto>) data.get("customers");
 			int totalRecords = (int) data.get("totalCount");
 
@@ -172,11 +180,10 @@ public class T002Action extends HttpServlet {
 			request.setAttribute("disableLast", disableLast);
 
 			// Preserve search inputs
-			request.setAttribute("searchUserName", userName);
-			request.setAttribute("searchSex", sex);
-			request.setAttribute("searchBirthdayFrom", birthdayFrom);
-			request.setAttribute("searchBirthdayTo", birthdayTo);
-
+			request.setAttribute("searchUserName", sco.getCustomerName());
+			request.setAttribute("searchSex", sco.getSex());
+			request.setAttribute("searchBirthdayFrom", sco.getBirthdayFrom());
+			request.setAttribute("searchBirthdayTo", sco.getBirthdayTo());
 			// Forward to JSP
 			request.getRequestDispatcher(Constant.T002).forward(request, response);
 		} catch (Exception e) {

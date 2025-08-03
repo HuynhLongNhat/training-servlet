@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import common.Constant;
+import common.Helper;
 import dto.T001Dto;
 import dto.T002Dto;
 import service.T003Service;
@@ -48,7 +49,11 @@ public class T003Action extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
+    	// Validate session
+		if (!Helper.isLogin(request)) {
+			response.sendRedirect(request.getContextPath() + "/T001");
+			return;
+		}
         // Parse customerId from request parameter
         Integer customerId = parseCustomerId(request.getParameter("customerId"));
 

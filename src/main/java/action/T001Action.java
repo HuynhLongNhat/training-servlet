@@ -36,7 +36,7 @@ public class T001Action extends HttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		if (Helper.isValidSession(request)) {
+		if (Helper.isLogin(request)) {
 			// Logged in, redirect to T002
 			response.sendRedirect(request.getContextPath() + "/T002");
 		} else {

@@ -38,9 +38,8 @@ public class LogoutAction extends HttpServlet {
         // Invalidate the current session if it exists
         HttpSession session = request.getSession(false);
         if (session != null) {
-            session.invalidate();
+            session.removeAttribute("user");
         }
-
         // Redirect back to the login page
         response.sendRedirect(request.getContextPath() + "/T001");
     }
