@@ -58,8 +58,8 @@ public class T001Action extends HttpServlet {
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		// Get login form inputs
-		String userId = request.getParameter("txtuserID");
-		String password = request.getParameter("txtpassword");
+		String userId = request.getParameter("userID");
+		String password = request.getParameter("password");
 		// Create DTO to carry login information
 		T001Dto loginDto = new T001Dto();
 		loginDto.setUserId(userId);

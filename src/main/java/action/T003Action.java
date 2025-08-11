@@ -6,7 +6,6 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
-import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -21,79 +20,80 @@ import dto.T002Dto;
 import service.T003Service;
 
 /**
- * T003Action handling request adding and editing customer information.
- * Supports both GET (load form) and POST (submit form) operations.
+ * Servlet implementation class T003Action.
  * 
- * @author YourName
- * @version 1.0
- * @since 2025-07-21
+ * <p>This servlet handles the Add/Edit operations for customer data (T002Dto).</p>
+ * It supports:
+ * <ul>
+ *   <li>Loading customer information for editing (GET request)</li>
+ *   <li>Validating and saving customer data (POST request)</li>
+ * </ul>
+ * 
+ * Mapped to URL: <code>/T003</code>
+ * 
+ * @author 
  */
 @WebServlet("/T003")
 public class T003Action extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
 
-    /** Service instance for handling customer-related operations */
+    /** Service instance for customer operations. */
     private final T003Service t003Service = T003Service.getInstance();
 
     /**
-     * Handles GET requests to display the customer form.
-     * Loads existing customer data for editing if {@code customerId} is provided;
-     * otherwise, prepares the form for adding a new customer.
+     * Handles GET requests.
+     * 
+     * <p>If the user is not logged in, they will be redirected to the login page.</p>
+     * <p>If a customerId is provided, the corresponding customer is retrieved and
+     * displayed in edit mode; otherwise, the form is shown in add mode.</p>
      *
-     * @param request  HTTP request object
-     * @param response HTTP response object
-     * @throws ServletException if servlet-specific error occurs
-     * @throws IOException      if I/O error occurs
+     * @param request  the HTTP request
+     * @param response the HTTP response
+     * @throws ServletException if an error occurs while forwarding to the JSP
+     * @throws IOException      if an I/O error occurs
      */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-    	// Validate session
-		if (!Helper.isLogin(request)) {
-			response.sendRedirect(request.getContextPath() + "/T001");
-			return;
-		}
-        // Parse customerId from request parameter
-        Integer customerId = parseCustomerId(request.getParameter("customerId"));
 
+        if (!Helper.isLogin(request)) {
+            response.sendRedirect(request.getContextPath() + "/T001");
+            return;
+        }
+
+        Integer customerId = parseCustomerId(request.getParameter("customerId"));
         if (customerId != null) {
-            // Load customer data for editing
             T002Dto customer = t003Service.getCustomerById(customerId);
             if (customer != null) {
                 request.setAttribute("customer", customer);
                 request.setAttribute("mode", "EDIT");
             } else {
-                // If customer not found, fallback to ADD mode
                 request.setAttribute("mode", "ADD");
             }
         } else {
-            // No customerId provided, prepare for adding new customer
             request.setAttribute("mode", "ADD");
         }
-
-        // Forward to customer form JSP
-        RequestDispatcher dispatcher = request.getRequestDispatcher(Constant.T003);
-        dispatcher.forward(request, response);
+        request.getRequestDispatcher(Constant.T003).forward(request, response);
     }
 
     /**
-     * Handles POST requests to save customer data.
-     * Validates form inputs, maps them to DTO, and delegates saving to the service layer.
-     *
-     * @param request  HTTP request object
-     * @param response HTTP response object
-     * @throws ServletException if servlet-specific error occurs
-     * @throws IOException      if I/O error occurs
+     * Handles POST requests.
+     * 
+     * <p>Reads the form data, validates it, and either inserts or updates
+     * the customer record depending on the mode (ADD/EDIT).</p>
+     * 
+     * @param request  the HTTP request
+     * @param response the HTTP response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException      if an I/O error occurs
      */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // Set request encoding to UTF-8
         request.setCharacterEncoding("UTF-8");
 
-        // Retrieve form parameters
         Integer customerId = parseCustomerId(request.getParameter("txtCustomerId"));
         String customerName = request.getParameter("txtCustomerName");
         String sex = request.getParameter("cboSex");
@@ -101,26 +101,9 @@ public class T003Action extends HttpServlet {
         String email = request.getParameter("txtEmail");
         String address = request.getParameter("txtAddress");
 
-        // Determine mode based on presence of customerId
         String mode = (customerId == null) ? "ADD" : "EDIT";
 
-        // Validate birthday input
-        String birthdayError = validateBirthday(birthday);
-        if (birthdayError != null) {
-            // Forward back to form with error message
-            forwardWithError(request, response, birthdayError, mode);
-            return;
-        }
-
-        // Validate email input
-        String emailError = validateEmail(email);
-        if (emailError != null) {
-            // Forward back to form with error message
-            forwardWithError(request, response, emailError, mode);
-            return;
-        }
-
-        // Map form data to DTO
+        // Prepare DTO to retain user input in case of validation errors
         T002Dto customer = new T002Dto();
         customer.setCustomerID(customerId);
         customer.setCustomerName(customerName);
@@ -129,96 +112,109 @@ public class T003Action extends HttpServlet {
         customer.setEmail(email);
         customer.setAddress(address);
 
-        // Get logged-in user info for audit tracking
+        // Validate birthday
+        String birthdayError = validateBirthday(birthday);
+        if (birthdayError != null) {
+            forwardWithError(request, response, birthdayError, mode, customer);
+            return;
+        }
+
+        // Validate email
+        String emailError = validateEmail(email);
+        if (emailError != null) {
+            forwardWithError(request, response, emailError, mode, customer);
+            return;
+        }
+
+        // Get logged-in user's ID
         HttpSession session = request.getSession(false);
         T001Dto loggedInUser = (T001Dto) session.getAttribute("user");
         Integer psnCd = (loggedInUser != null) ? loggedInUser.getPsnCd() : null;
 
         try {
-            // Save customer data via service
             boolean success = "ADD".equals(mode)
                     ? t003Service.insertCustomer(customer, psnCd)
                     : t003Service.updateCustomer(customer, psnCd);
 
             if (success) {
-                // Redirect to customer list screen after successful save
                 response.sendRedirect(request.getContextPath() + "/T002");
             } else {
-                // Forward back with general error message
-                forwardWithError(request, response, "Đã xảy ra lỗi khi lưu dữ liệu.", mode);
+                forwardWithError(request, response, "An error occurred while saving data.", mode, customer);
             }
         } catch (SQLException e) {
-            // Handle database-related errors
             throw new ServletException("Database error occurred while saving customer.", e);
         }
     }
 
     /**
-     * Parses the customerId parameter safely.
-     *
-     * @param customerIdParam raw customerId string from request
-     * @return parsed Integer value or {@code null} if invalid
+     * Parses a string into an Integer customer ID.
+     * 
+     * @param customerIdParam the string representation of the customer ID
+     * @return the parsed Integer, or null if the string is empty or invalid
      */
     private Integer parseCustomerId(String customerIdParam) {
         if (customerIdParam != null && !customerIdParam.trim().isEmpty()) {
             try {
                 return Integer.parseInt(customerIdParam.trim());
             } catch (NumberFormatException e) {
-                // Log and ignore invalid format
+                return null;
             }
         }
         return null;
     }
 
     /**
-     * Forwards the request back to the customer form with an error message.
-     *
-     * @param request      HTTP request object
-     * @param response     HTTP response object
-     * @param errorMessage error message to display
-     * @param mode         current form mode ("ADD" or "EDIT")
-     * @throws ServletException if servlet-specific error occurs
-     * @throws IOException      if I/O error occurs
+     * Forwards the request back to the JSP with an error message and pre-filled form data.
+     * 
+     * @param request       the HTTP request
+     * @param response      the HTTP response
+     * @param errorMessage  the error message to display
+     * @param mode          the current form mode ("ADD" or "EDIT")
+     * @param customer      the customer DTO containing user input
+     * @throws ServletException if an error occurs while forwarding
+     * @throws IOException      if an I/O error occurs
      */
-    private void forwardWithError(HttpServletRequest request, HttpServletResponse response, String errorMessage,
-            String mode) throws ServletException, IOException {
+    private void forwardWithError(HttpServletRequest request, HttpServletResponse response,
+                                   String errorMessage, String mode, T002Dto customer)
+            throws ServletException, IOException {
         request.setAttribute("errorMessage", errorMessage);
         request.setAttribute("mode", mode);
+        request.setAttribute("customer", customer);
         request.getRequestDispatcher(Constant.T003).forward(request, response);
     }
 
     /**
-     * Validates a single birthday input.
-     *
-     * @param birthday date string in {@code yyyy/MM/dd} format
-     * @return error message if invalid, {@code null} if valid
+     * Validates the birthday string format (yyyy/MM/dd).
+     * 
+     * @param birthday the birthday string
+     * @return an error message if invalid, or null if valid
      */
     private String validateBirthday(String birthday) {
         if (birthday == null || birthday.trim().isEmpty()) {
-            return "誕生日が不正です。";
+            return "Invalid birthday.";
         }
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
         try {
             LocalDate.parse(birthday.trim(), formatter);
         } catch (DateTimeParseException e) {
-            return "誕生日が不正です。";
+            return "Invalid birthday.";
         }
         return null;
     }
 
     /**
-     * Validates email format.
-     *
-     * @param email email string to validate
-     * @return error message if invalid, {@code null} if valid
+     * Validates the email format.
+     * 
+     * @param email the email string
+     * @return an error message if invalid, or null if valid
      */
     private String validateEmail(String email) {
         if (email == null || email.trim().isEmpty()) {
-            return "メールアドレスが不正です。";
+            return "Invalid email address.";
         }
         String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
         if (!email.matches(emailRegex)) {
-            return "メールアドレスが不正です。";
+            return "Invalid email address.";
         }
         return null;
     }

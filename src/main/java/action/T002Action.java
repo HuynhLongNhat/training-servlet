@@ -108,6 +108,7 @@ public class T002Action extends HttpServlet {
 	 * @throws ServletException
 	 * @throws IOException
 	 */
+	@SuppressWarnings("unchecked")
 	private void findCustomer(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 
@@ -116,6 +117,7 @@ public class T002Action extends HttpServlet {
 			response.sendRedirect(request.getContextPath() + "/T001");
 			return;
 		}
+		;
 		String actionType = request.getParameter("actionType");
 		HttpSession session = request.getSession();
 
@@ -127,18 +129,20 @@ public class T002Action extends HttpServlet {
 
 		if ("search".equals(actionType)) {
 			// Get from request
-			sco = new T002SCO();
-			sco.setCustomerName(request.getParameter("lblUserName"));
-			sco.setSex(request.getParameter("cboSex"));
-			sco.setBirthdayFrom(request.getParameter("txtBirthdayForm"));
-			sco.setBirthdayTo(request.getParameter("txtBirthdayTo"));
+			String customerName = request.getParameter("lblUserName");
+			String sex = request.getParameter("cboSex");
+			String birthdayFrom = request.getParameter("txtBirthdayForm");
+			String birthdayTo = request.getParameter("txtBirthdayTo");
+
+			sco.setCustomerName(customerName);
+			sco.setSex(sex);
+			sco.setBirthdayFrom(birthdayFrom);
+			sco.setBirthdayTo(birthdayTo);
 
 			// Validate input
 			String errorMessage = validateBirthdayInput(sco.getBirthdayFrom(), sco.getBirthdayTo());
 			if (errorMessage != null) {
 				request.setAttribute("errorMessage", errorMessage);
-				// Reset search if invalid
-				sco = new T002SCO(); 
 			}
 			// Save SCO into session
 			session.setAttribute("T002SCO", sco);
