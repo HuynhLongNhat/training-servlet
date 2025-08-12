@@ -196,7 +196,6 @@ public class T002Action extends HttpServlet {
 			request.getRequestDispatcher(Constant.T002).forward(request, response);
 		}
 	}
-
 	/**
 	 * Handles deletion of selected customers.
 	 *

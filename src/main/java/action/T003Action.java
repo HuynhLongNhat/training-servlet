@@ -101,8 +101,8 @@ public class T003Action extends HttpServlet {
         String email = request.getParameter("txtEmail");
         String address = request.getParameter("txtAddress");
 
-        String mode = (customerId == null) ? "ADD" : "EDIT";
-
+        String mode = request.getParameter("mode");
+        System.out.println("mode" + mode);
         // Prepare DTO to retain user input in case of validation errors
         T002Dto customer = new T002Dto();
         customer.setCustomerID(customerId);
@@ -130,20 +130,23 @@ public class T003Action extends HttpServlet {
         HttpSession session = request.getSession(false);
         T001Dto loggedInUser = (T001Dto) session.getAttribute("user");
         Integer psnCd = (loggedInUser != null) ? loggedInUser.getPsnCd() : null;
-
         try {
-            boolean success = "ADD".equals(mode)
-                    ? t003Service.insertCustomer(customer, psnCd)
-                    : t003Service.updateCustomer(customer, psnCd);
-
-            if (success) {
-                response.sendRedirect(request.getContextPath() + "/T002");
+            if ("ADD".equals(mode)) {
+                t003Service.insertCustomer(customer, psnCd);
             } else {
-                forwardWithError(request, response, "An error occurred while saving data.", mode, customer);
+                t003Service.updateCustomer(customer, psnCd);
             }
+
+            // Nếu chạy tới đây là không có lỗi → redirect
+			response.sendRedirect(request.getContextPath() + "/T002");
+
         } catch (SQLException e) {
             throw new ServletException("Database error occurred while saving customer.", e);
+        } catch (Exception e) {
+            // Bắt các lỗi khác (nếu cần)
+            forwardWithError(request, response, "An error occurred while saving data.", mode, customer);
         }
+
     }
 
     /**

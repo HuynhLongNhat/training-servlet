@@ -58,8 +58,8 @@ public class T003Service {
      * @return {@code true} if the insertion was successful; {@code false} otherwise
      * @throws SQLException if a database access error occurs
      */
-    public boolean insertCustomer(T002Dto customer, Integer psnCd) throws SQLException {
-        return t003Dao.insertCustomer(customer, psnCd);
+    public void insertCustomer(T002Dto customer, Integer psnCd) throws SQLException {
+         t003Dao.insertCustomer(customer, psnCd);
     }
 
     /**
@@ -70,7 +70,7 @@ public class T003Service {
      * @return {@code true} if the update was successful; {@code false} otherwise
      * @throws SQLException if a database access error occurs
      */
-    public boolean updateCustomer(T002Dto customer, Integer psnCd) throws SQLException {
-        return t003Dao.updateCustomer(customer, psnCd);
+    public void updateCustomer(T002Dto customer, Integer psnCd) throws SQLException {
+         t003Dao.updateCustomer(customer, psnCd);
     }
 }

@@ -43,28 +43,20 @@ public class T002Service {
         return INSTANCE;
     }
 
-    /**
-     * Searches customers using search condition object and pagination.
-     *
-     * @param sco    search condition object containing filters
-     * @param offset starting row for pagination
-     * @param limit  number of rows per page
-     * @return a map with keys:
-     *         - "customers": list of {@link T002Dto}
-     *         - "totalCount": total matching records
-     * @throws SQLException if database access fails
-     */
-    public Map<String, Object> searchCustomers(T002SCO sco, int offset, int limit) throws SQLException {
-        return t002Dao.searchCustomers(
-            sco != null ? sco.getCustomerName() : null,
-            sco != null ? sco.getSex() : null,
-            sco != null ? sco.getBirthdayFrom() : null,
-            sco != null ? sco.getBirthdayTo() : null,
-            offset,
-            limit
-        );
-    }
+	/**
+	 * Searches customers using search condition object and pagination.
+	 *
+	 * @param sco    search condition object containing filters
+	 * @param offset starting row for pagination
+	 * @param limit  number of rows per page
+	 * @return a map with keys: - "customers": list of {@link T002Dto} -
+	 *         "totalCount": total matching records
+	 * @throws SQLException if database access fails
+	 */
 
+	public Map<String, Object> searchCustomers(T002SCO sco, int offset, int limit) throws SQLException {
+		return t002Dao.searchCustomers(sco, offset, limit);
+	}
 
     /**
      * Marks customers as deleted based on the provided list of IDs.

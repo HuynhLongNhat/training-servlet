@@ -41,7 +41,7 @@ public class T001Action extends HttpServlet {
 			response.sendRedirect(request.getContextPath() + "/T002");
 		} else {
 			// Invalid session, display login screen
-			forwardToLogin(request, response, null);
+			forwardToLogin(request, response, null, null);
 		}
 	}
 
@@ -68,7 +68,7 @@ public class T001Action extends HttpServlet {
 		String errorMessage = validateForm(loginDto);
 		if (errorMessage != null) {
 			// Validation failed: redisplay login page with error message
-			forwardToLogin(request, response, errorMessage);
+			forwardToLogin(request, response, errorMessage,loginDto);
 			return;
 		}
 		try {
@@ -81,7 +81,7 @@ public class T001Action extends HttpServlet {
 				response.sendRedirect(request.getContextPath() + "/T002");
 			} else {
 				// Authentication failed: redisplay login page with error message
-				forwardToLogin(request, response, "User does not exist.");
+				forwardToLogin(request, response, "User does not exist.",loginDto);
 			}
 		} catch (SQLException e) {
 			// Handle database errors during login process
@@ -115,11 +115,11 @@ public class T001Action extends HttpServlet {
 	 * @throws ServletException
 	 * @throws IOException
 	 */
-	private void forwardToLogin(HttpServletRequest request, HttpServletResponse response, String errorMessage)
+	private void forwardToLogin(HttpServletRequest request, HttpServletResponse response, String errorMessage, T001Dto t001Dto)
 			throws ServletException, IOException {
 		// Set error message if present
-		if (errorMessage != null)
 			request.setAttribute("errorMessage", errorMessage);
+			request.setAttribute("t001Dto", t001Dto);
 		// Forward to login page
 		request.getRequestDispatcher(Constant.T001).forward(request, response);
 	}

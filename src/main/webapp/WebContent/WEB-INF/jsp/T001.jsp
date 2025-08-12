@@ -1,4 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java"%>
+<%@ page import="dto.T001Dto"%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -9,7 +10,7 @@
 <body>
     <%
     String errorMessage = (String) request.getAttribute("errorMessage");
-
+    T001Dto t001Dto = (T001Dto) request.getAttribute("t001Dto");
     %>
 	<%@ include file="Header.jsp"%>
 	<nav class="nav-login">Login</nav>
@@ -24,6 +25,7 @@
 				<label for="txtuserID">User Id :</label> 
 				<input type="text"
 					   id="txtuserID" 
+					   value="<%= t001Dto != null ? t001Dto.getUserId() : "" %>"
 					   name="userID">
 			</div>
 
@@ -31,6 +33,7 @@
 				<label for="txtpassword">Password :</label> 
 				<input type="password"
 					   id="txtpassword" 
+					   value="<%= t001Dto != null ? t001Dto.getPassword() : "" %>"
 					   name="password">
 			</div>
 

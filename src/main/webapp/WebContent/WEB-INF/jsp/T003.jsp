@@ -29,6 +29,7 @@
 
     <div class="form-container">
         <form action="T003" method="post" id="customerForm">
+        	 <input type="hidden" name="mode" value="<%= mode != null ? mode : "ADD" %>" />
             <label class="error-message" id="lblErrorMessage">
                 <%= request.getAttribute("errorMessage") != null ? request.getAttribute("errorMessage") : "" %>
             </label>
@@ -74,13 +75,13 @@
 
             <div class="button-group">
                 <button type="submit" id="btnSave">Save</button>
-                <button type="button" name="btnClear" onclick="resetCustomerForm()">Clear</button>
+                <button type="button" name="btnClear" onclick="clearFormEdit()">Clear</button>
             </div>
         </form>
     </div>
 </div>
 <%@ include file="Footer.jsp" %>
-<script src="${pageContext.request.contextPath}/WebContent/js/script.js"></script>
+<script src="${pageContext.request.contextPath}/WebContent/js/script.js?<%=System.currentTimeMillis()%>"></script>
 <script>
     function resetCustomerForm() {
         const form = document.getElementById('customerForm');
