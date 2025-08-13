@@ -70,8 +70,8 @@ public class T002Dao {
 		// Lấy tham số từ sco
 		String userName = sco.getCustomerName();
 		String sex = sco.getSex();
-		String birthdayFromStr = sco.getBirthdayFrom();
-		String birthdayToStr = sco.getBirthdayTo();
+		String birthdayFrom = sco.getBirthdayFrom();
+		String birthdayTo = sco.getBirthdayTo();
 
 		if (userName != null && !userName.trim().isEmpty()) {
 			whereClause.append(" AND CUSTOMER_NAME LIKE ?");
@@ -81,32 +81,13 @@ public class T002Dao {
 			whereClause.append(" AND SEX = ?");
 			params.add(sex.trim());
 		}
-
-		// Format ngày sinh yyyy/MM/dd
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
-		java.sql.Date birthdayFrom = null;
-		java.sql.Date birthdayTo = null;
-
-		if (birthdayFromStr != null && !birthdayFromStr.trim().isEmpty()) {
-			try {
-				LocalDate localDateFrom = LocalDate.parse(birthdayFromStr.trim(), formatter);
-				birthdayFrom = java.sql.Date.valueOf(localDateFrom);
-				whereClause.append(" AND BIRTHDAY >= ?");
-				params.add(birthdayFrom);
-			} catch (DateTimeParseException e) {
-				e.printStackTrace();
-			}
+		if (birthdayFrom != null && !birthdayFrom.trim().isEmpty()) {
+			whereClause.append(" AND BIRTHDAY >= ?");
+			params.add(birthdayFrom.trim());
 		}
-
-		if (birthdayToStr != null && !birthdayToStr.trim().isEmpty()) {
-			try {
-				LocalDate localDateTo = LocalDate.parse(birthdayToStr.trim(), formatter);
-				birthdayTo = java.sql.Date.valueOf(localDateTo);
-				whereClause.append(" AND BIRTHDAY <= ?");
-				params.add(birthdayTo);
-			} catch (DateTimeParseException e) {
-				e.printStackTrace();
-			}
+		if (birthdayTo != null && !birthdayTo.trim().isEmpty()) {
+			whereClause.append(" AND BIRTHDAY <= ?");
+			params.add(birthdayTo.trim());
 		}
 		// Đếm tổng bản ghi
 		int totalCount;

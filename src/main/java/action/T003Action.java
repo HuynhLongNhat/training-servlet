@@ -61,7 +61,6 @@ public class T003Action extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/T001");
             return;
         }
-
         Integer customerId = parseCustomerId(request.getParameter("customerId"));
         if (customerId != null) {
             T002Dto customer = t003Service.getCustomerById(customerId);

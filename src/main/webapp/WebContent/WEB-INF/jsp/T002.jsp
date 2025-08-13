@@ -58,17 +58,17 @@
 		<!-- Search form -->
 		<form action="T002" class="search-form" method="post">
 			<input type="hidden" name="actionType" value="search"> <label>Customer
-				Name <input type="text" id="lblUserName" name="lblUserName"
+				Name <input type="text" id="lblUserName" name="customerName"
 				value="<%=searchUserName != null ? searchUserName : ""%>">
-			</label> <label>Sex <select id="cboSex" name="cboSex">
+			</label> <label>Sex <select id="cboSex" name="sex">
 					<option value=""></option>
 					<option value="0" <%= "0".equals(searchSex) ? "selected" : "" %>>Male</option>
 					<option value="1" <%= "1".equals(searchSex) ? "selected" : "" %>>Female</option>
 			</select>
 			</label> <label>Birthday <input type="text" id="txtBirthdayForm"
-				name="txtBirthdayForm"
+				name="birthdayFrom"
 				value="<%=searchBirthdayFrom != null ? searchBirthdayFrom : ""%>">
-				- <input type="text" id="txtBirthdayTo" name="txtBirthdayTo"
+				- <input type="text" id="txtBirthdayTo" name="birthdayTo"
 				value="<%=searchBirthdayTo != null ? searchBirthdayTo : ""%>">
 			</label>
 			<button type="submit">Search</button>
@@ -105,7 +105,7 @@
 
 		<!-- Customer list and Delete form -->
 		<form action="T002" method="post">
-			<input type="hidden" name="action" value="delete">
+			<input type="hidden" name="actionType" value="delete">
 			<table class="customer-table">
 				<thead>
 					<tr>

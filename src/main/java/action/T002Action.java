@@ -22,209 +22,162 @@ import dto.T002Dto;
 import dto.T002SCO;
 import service.T002Service;
 
-/**
- * T002Action handling request customer list display and search.
- *
- * @author YourName
- * @version 1.0
- * @since 2025-07-23
- */
 @WebServlet("/T002")
 public class T002Action extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
-
-	/** Service instance for data access. */
 	private final T002Service t002Service = T002Service.getInstance();
-
-	/** Default number of records per page. */
 	private static final int PAGE_SIZE = 15;
+	private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyy/MM/dd");
 
-	/**
-	 * Validates birthday range input.
-	 *
-	 * @param birthdayFrom start date string in yyyy/MM/dd format
-	 * @param birthdayTo   end date string in yyyy/MM/dd format
-	 * @return error message if invalid, null if valid
-	 */
-	private String validateBirthdayInput(String birthdayFrom, String birthdayTo) {
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
-		try {
-			LocalDate from = Helper.isEmpty(birthdayFrom) ? null : LocalDate.parse(birthdayFrom.trim(), formatter);
-			LocalDate to = Helper.isEmpty(birthdayTo) ? null : LocalDate.parse(birthdayTo.trim(), formatter);
-
-			// Check if range is invalid
-			if (from != null && to != null && to.isBefore(from)) {
-				return "There is an error in the range input of birthday.";
-			}
-		} catch (DateTimeParseException e) {
-			// Identify which date is invalid
-			return e.getParsedString().equals(birthdayFrom) ? "Invalid Birthday (From)." : "Invalid Birthday (To).";
-		}
-		return null;
-	}
-
-	/**
-	 * Handles GET requests for T002 screen.
-	 *
-	 * @param HttpServletRequest  request
-	 * @param HttpServletResponse response
-	 * @throws ServletException
-	 * @throws IOException
-	 */
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		findCustomer(request, response);
+		if (!checkLogin(request, response))
+			return;
+		T002SCO sco = getSCO(request);
+		findCustomer(request, response, sco);
 	}
 
-	/**
-	 * Handles POST requests for T002 screen. Supports both search and delete
-	 * actions.
-	 *
-	 * @param HttpServletRequest  request
-	 * @param HttpServletResponse response
-	 * @throws ServletException
-	 * @throws IOException
-	 */
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		String action = request.getParameter("action");
-
-		// Check if delete action is triggered
-		if ("delete".equals(action)) {
-			deleteCustomer(request, response);
-		} else {
-			findCustomer(request, response);
+		if (!checkLogin(request, response))
+			return;
+		String actionType = request.getParameter("actionType");
+		if ("delete".equalsIgnoreCase(actionType)) {
+			String[] ids = request.getParameterValues("customerIds");
+			deleteCustomer(request, response,ids);
+		} else if ("search".equalsIgnoreCase(actionType)) {
+			T002SCO sco = getSCO(request);
+			String customerName = request.getParameter("customerName");
+			String sex = request.getParameter("sex");
+			String birthdayFrom = request.getParameter("birthdayFrom");
+			String birthdayTo = request.getParameter("birthdayTo");
+			sco.setCustomerName(customerName);
+			sco.setSex(sex);
+			String err = validateBirthday(birthdayFrom, birthdayTo);
+			if (err != null) {
+				request.setAttribute("errorMessage", err);
+			}
+			else {
+				sco.setBirthdayFrom(birthdayFrom);
+				sco.setBirthdayTo(birthdayTo);
+			}
+			HttpSession session = request.getSession();
+			session.setAttribute("T002SCO", sco);
+			findCustomer(request, response, sco);
 		}
 	}
 
-	/**
-	 * Processes customer listing and search logic.
-	 *
-	 * @param request  HTTP request
-	 * @param response HTTP response
-	 * @throws ServletException
-	 * @throws IOException
-	 */
-	@SuppressWarnings("unchecked")
-	private void findCustomer(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
-
-		// Validate session
+	/** Check login status and redirect if session expired */
+	private boolean checkLogin(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		if (!Helper.isLogin(request)) {
 			response.sendRedirect(request.getContextPath() + "/T001");
-			return;
+			return false;
 		}
-		;
-		String actionType = request.getParameter("actionType");
-		HttpSession session = request.getSession();
+		return true;
+	}
 
-		// Get search condition object from session
-		T002SCO sco = (T002SCO) session.getAttribute("T002SCO");
-		if (sco == null) {
-			sco = new T002SCO();
-		}
+	/** Validate birthday input */
+	private String validateBirthday(String fromStr, String toStr) {
+	    LocalDate fromDate = null, toDate = null;
 
-		if ("search".equals(actionType)) {
-			// Get from request
-			String customerName = request.getParameter("lblUserName");
-			String sex = request.getParameter("cboSex");
-			String birthdayFrom = request.getParameter("txtBirthdayForm");
-			String birthdayTo = request.getParameter("txtBirthdayTo");
+	    if (!Helper.isEmpty(fromStr)) {
+	        try {
+	            fromDate = LocalDate.parse(fromStr.trim(), DATE_FMT);
+	        } catch (DateTimeParseException e) {
+	            return "Invalid Birthday (From).";
+	        }
+	    }
 
-			sco.setCustomerName(customerName);
-			sco.setSex(sex);
-			sco.setBirthdayFrom(birthdayFrom);
-			sco.setBirthdayTo(birthdayTo);
+	    if (!Helper.isEmpty(toStr)) {
+	        try {
+	            toDate = LocalDate.parse(toStr.trim(), DATE_FMT);
+	        } catch (DateTimeParseException e) {
+	            return "Invalid Birthday (To).";
+	        }
+	    }
 
-			// Validate input
-			String errorMessage = validateBirthdayInput(sco.getBirthdayFrom(), sco.getBirthdayTo());
-			if (errorMessage != null) {
-				request.setAttribute("errorMessage", errorMessage);
-			}
-			// Save SCO into session
-			session.setAttribute("T002SCO", sco);
-		}
-		// Handle pagination
-		int currentPage;
-		try {
-			currentPage = Math.max(Integer.parseInt(request.getParameter("page")), 1);
-		} catch (NumberFormatException e) {
-			currentPage = 1;
-		}
-		// Calculate offset
+	    if (fromDate != null && toDate != null && toDate.isBefore(fromDate)) {
+	        return "Birthday To must be after or equal Birthday From.";
+	    }
+	    return null;
+	}
+
+
+	/** Display and search customer list */
+	@SuppressWarnings("unchecked")
+	private void findCustomer(HttpServletRequest request, HttpServletResponse response, T002SCO sco)
+			throws ServletException, IOException {
+
+		int currentPage = parsePage(request.getParameter("page"));
 		int offset = (currentPage - 1) * PAGE_SIZE;
 
 		try {
-			// Fetch customer data from service
 			Map<String, Object> data = t002Service.searchCustomers(sco, offset, PAGE_SIZE);
 			List<T002Dto> customers = (List<T002Dto>) data.get("customers");
 			int totalRecords = (int) data.get("totalCount");
-
-			// Calculate total pages
 			int totalPages = (int) Math.ceil((double) totalRecords / PAGE_SIZE);
+
 			if (currentPage > totalPages && totalPages > 0) {
 				currentPage = totalPages;
 			}
 
-			// Set attributes for JSP
 			request.setAttribute("customers", customers);
 			request.setAttribute("totalRecords", totalRecords);
 			request.setAttribute("currentPage", currentPage);
 			request.setAttribute("totalPages", totalPages);
+			request.setAttribute("disableFirst", currentPage == 1);
+			request.setAttribute("disablePrevious", currentPage == 1);
+			request.setAttribute("disableNext", currentPage == totalPages || totalPages == 0);
+			request.setAttribute("disableLast", currentPage == totalPages || totalPages == 0);
 
-			// Handle pagination button states
-			boolean disableFirst = currentPage == 1;
-			boolean disableLast = currentPage == totalPages || totalPages == 0;
-			request.setAttribute("disableFirst", disableFirst);
-			request.setAttribute("disablePrevious", disableFirst);
-			request.setAttribute("disableNext", disableLast);
-			request.setAttribute("disableLast", disableLast);
-
-			// Preserve search inputs
 			request.setAttribute("searchUserName", sco.getCustomerName());
 			request.setAttribute("searchSex", sco.getSex());
 			request.setAttribute("searchBirthdayFrom", sco.getBirthdayFrom());
 			request.setAttribute("searchBirthdayTo", sco.getBirthdayTo());
-			// Forward to JSP
+
 			request.getRequestDispatcher(Constant.T002).forward(request, response);
 		} catch (Exception e) {
-			// Handle unexpected errors
 			e.printStackTrace();
 			request.getRequestDispatcher(Constant.T002).forward(request, response);
 		}
 	}
-	/**
-	 * Handles deletion of selected customers.
-	 *
-	 * @param request  HTTP request
-	 * @param response HTTP response
-	 * @throws ServletException
-	 * @throws IOException
-	 */
-	protected void deleteCustomer(HttpServletRequest request, HttpServletResponse response)
+
+	/** Delete selected customers */
+	private void deleteCustomer(HttpServletRequest request, HttpServletResponse response, String[] ids)
 			throws ServletException, IOException {
-
-		// Get selected customer IDs
-		String[] ids = request.getParameterValues("customerIds");
-
-		// If no rows selected, show error and reload list
+		T002SCO sco = getSCO(request);
 		if (ids == null || ids.length == 0) {
 			request.setAttribute("errorMessage", "行を選択してください。");
-			findCustomer(request, response);
+			findCustomer(request, response, sco);
 			return;
 		}
-
 		try {
-			// Delete selected customers
 			t002Service.deleteCustomers(Arrays.asList(ids));
+			response.sendRedirect(request.getContextPath() + "/T002"); 
 		} catch (SQLException e) {
 			throw new ServletException(e);
 		}
+	}
 
-		// Reload list after deletion
-		findCustomer(request, response);
+	/** Utility: parse page number */
+	private int parsePage(String pageStr) {
+		try {
+			return Math.max(Integer.parseInt(pageStr), 1);
+		} catch (NumberFormatException e) {
+			return 1;
+		}
+	}
+	
+	private T002SCO getSCO(HttpServletRequest request) {
+	    HttpSession session = request.getSession();
+	    T002SCO sco = (T002SCO) session.getAttribute("T002SCO");
+	    if (sco == null) {
+	        sco = new T002SCO();
+	        session.setAttribute("T002SCO", sco);
+	    }
+	    return sco;
 	}
 }
